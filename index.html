@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tom Tsatsos — Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0e;
+      --surface: #141416;
+      --border: #222226;
+      --text: #e8e8ec;
+      --muted: #6b6b75;
+      --accent: #6366f1;
+      --accent-muted: rgba(99,102,241,.12);
+      --tag-bg: #1a1a1f;
+      --tag-text: #9090a0;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .wordmark {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 600;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    .tagline {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 520px;
+      font-weight: 300;
+    }
+
+    .links {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+
+    .links a:hover {
+      color: var(--text);
+      border-color: #444;
+      background: var(--surface);
+    }
+
+    /* ── Section ── */
+    section {
+      padding: 64px 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      font-size: .95rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    /* ── Cards ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color .15s, background .15s;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: #333;
+      background: #18181c;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .card-status {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: .03em;
+    }
+
+    .status-live {
+      background: rgba(34,197,94,.12);
+      color: #4ade80;
+    }
+
+    .status-testflight {
+      background: rgba(59,130,246,.12);
+      color: #60a5fa;
+    }
+
+    .status-building {
+      background: rgba(251,191,36,.12);
+      color: #fbbf24;
+    }
+
+    .status-idea {
+      background: rgba(156,163,175,.1);
+      color: #9ca3af;
+    }
+
+    .card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: .875rem;
+      color: var(--muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      letter-spacing: .02em;
+    }
+
+    .card-link {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-link svg {
+      flex-shrink: 0;
+    }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Agency section ── */
+    .agency-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .agency-name {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -.04em;
+    }
+
+    .agency-desc {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 560px;
+      font-weight: 300;
+    }
+
+    .client-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .client-tag {
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--text);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header { padding: 48px 0 40px; }
+      section { padding: 48px 0; }
+      .agency-box { padding: 24px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="wordmark">ttsatsos</div>
+    <h1>Tom Tsatsos</h1>
+    <p class="tagline">
+      Building AI-native products and infrastructure — mostly for kids, families, and the agency I've run for 20 years.
+    </p>
+    <div class="links">
+      <a href="https://github.com/ttsatsos" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+        GitHub
+      </a>
+      <a href="https://nr10.com" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        nr10.com
+      </a>
+      <a href="mailto:ttsatsos@gmail.com">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Email
+      </a>
+    </div>
+  </header>
+
+  <!-- ── PRODUCTS ── -->
+  <section>
+    <div class="section-label">Products</div>
+    <h2>Things I'm building</h2>
+    <p class="section-sub">Personal projects — mostly AI, mostly for my family, all running on my own infra.</p>
+
+    <div class="grid">
+
+      <!-- Almara -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🌱</div>
+          <span class="card-status status-testflight">TestFlight</span>
+        </div>
+        <div class="card-name">Almara</div>
+        <div class="card-desc">
+          Quiet habit-tracking iOS app for kids 7–14. No streaks, no leaderboards, no dopamine loops — real-world effort grows an avatar across 5 stages over years. Almas (✦) currency funds parent-curated rewards.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Swift</span>
+          <span class="tag">SwiftUI</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">iOS</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- KidQueue -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">📺</div>
+          <span class="card-status status-testflight">TestFlight</span>
+        </div>
+        <div class="card-name">KidQueue</div>
+        <div class="card-desc">
+          Curated kid-video walled garden. Kids browse a shelf I pre-approved; Claude auto-classifies channels into enriching vs. treat tiers. The wall is iOS Screen Time — no YouTube rabbit holes.
+        </div>
+        <div class="card-tags">
+          <span class="tag">SwiftUI</span>
+          <span class="tag">Next.js</span>
+          <span class="tag">Claude</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">YouTube API</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- Mama Coco -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">⌚</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Mama Coco</div>
+        <div class="card-desc">
+          Apple Watch AI assistant for my kids. Voice-first; self-hosted Claude Haiku gateway runs on my Mac Mini via Tailscale Funnel. Multi-session chats, text-to-speech, zero cloud lock-in.
+        </div>
+        <div class="card-tags">
+          <span class="tag">watchOS</span>
+          <span class="tag">Swift</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">Claude</span>
+          <span class="tag">Tailscale</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- Yuko AI -->
+      <a class="card" href="https://yuko-ai.vercel.app" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">📥</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Yuko AI</div>
+        <div class="card-desc">
+          Personal AI inbox. SMS, email, or in-app → Claude classifies into tasks, goals, ideas, saves. Differentiator: a tone-aware, anti-nag nudge engine with HMAC-signed stateless action tokens.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Next.js 16</span>
+          <span class="tag">Claude</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">Twilio</span>
+          <span class="tag">Web Push</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          yuko-ai.vercel.app
+        </div>
+      </a>
+
+      <!-- Expert Panel -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🎙️</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Expert Panel</div>
+        <div class="card-desc">
+          Multi-agent AI advisory board with versioned domain-expert personas and persistent per-agent memory. Daily portfolio standup runs automatically on my Mac Mini; real-time Slack agent team active in my workspace.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Claude</span>
+          <span class="tag">Multi-agent</span>
+          <span class="tag">Slack</span>
+          <span class="tag">launchd</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- Symphony -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🎻</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Symphony</div>
+        <div class="card-desc">
+          AI development orchestrator. Polls Linear tickets in "In Progress," spawns Claude Code in a per-issue workspace, and moves the ticket to "In Review" with a PR link on clean exit. Runs 24/7 on my Mac Mini.
+        </div>
+        <div class="card-tags">
+          <span class="tag">TypeScript</span>
+          <span class="tag">Claude Code</span>
+          <span class="tag">Linear API</span>
+          <span class="tag">GitHub</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- Vitals -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">📊</div>
+          <span class="card-status status-building">Building</span>
+        </div>
+        <div class="card-name">Vitals</div>
+        <div class="card-desc">
+          Ecommerce health monitoring engine. Connects Shopify, GA4, and Google Ads → deterministic rules detect anomalies → Claude composes a daily Slack brief and weekly email digest. No dashboard in v1.
+        </div>
+        <div class="card-tags">
+          <span class="tag">TypeScript</span>
+          <span class="tag">Shopify</span>
+          <span class="tag">GA4</span>
+          <span class="tag">Claude</span>
+          <span class="tag">Postgres</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Private repo
+        </div>
+      </div>
+
+      <!-- Foil -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🎙</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Foil</div>
+        <div class="card-desc">
+          AI voice interviewer. Ask one question → interviewee records an answer → Whisper transcribes → Claude scores against a rubric → gates into a structured knowledge corpus. Async, no real-time streaming needed.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Next.js</span>
+          <span class="tag">Whisper</span>
+          <span class="tag">Kokoro TTS</span>
+          <span class="tag">Claude</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><path d="M12 6v6l4 2"/></svg>
+          Self-hosted
+        </div>
+      </div>
+
+      <!-- Dossier -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🗂</div>
+          <span class="card-status status-live">Live</span>
+        </div>
+        <div class="card-name">Dossier</div>
+        <div class="card-desc">
+          Constraint-blocked idea tracker. 125 ideas tagged by the one world-state flip that unblocks each. A watcher loop clusters predicates, monitors the frontier with web search, and pings when something trips.
+        </div>
+        <div class="card-tags">
+          <span class="tag">Python</span>
+          <span class="tag">Claude</span>
+          <span class="tag">launchd</span>
+          <span class="tag">Slack</span>
+        </div>
+        <div class="card-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/></svg>
+          Local
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- ── AGENCY ── -->
+  <section>
+    <div class="section-label">Agency</div>
+    <h2>20 years of client work</h2>
+    <p class="section-sub">I also run #10, a web design and ecommerce agency.</p>
+
+    <div class="agency-box">
+      <div>
+        <div class="agency-name">#10</div>
+      </div>
+      <div style="flex:1; min-width:240px;">
+        <p class="agency-desc">
+          San Francisco web design and ecommerce agency. Shopify Plus builds, WordPress, SEO, and ongoing digital ops for consumer brands and enterprise clients. Running since 2006.
+        </p>
+        <div class="client-list">
+          <span class="client-tag">McEvoy Ranch</span>
+          <span class="client-tag">Ghirardelli</span>
+          <span class="client-tag">Sony Ericsson</span>
+          <span class="client-tag">Stryker</span>
+          <span class="client-tag">prAna</span>
+          <span class="client-tag">Juice Beauty</span>
+          <span class="client-tag">TriNet</span>
+          <span class="client-tag">BioMarin</span>
+          <span class="client-tag">Marubeni</span>
+          <span class="client-tag">OCP</span>
+        </div>
+        <div class="links" style="margin-top:20px;">
+          <a href="https://nr10.com" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+            nr10.com
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span>Tom Tsatsos — San Francisco</span>
+    <span>
+      <a href="https://github.com/ttsatsos" target="_blank" rel="noopener">github.com/ttsatsos</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:ttsatsos@gmail.com">ttsatsos@gmail.com</a>
+    </span>
+  </footer>
+
+</div>
+
+</body>
+</html>
